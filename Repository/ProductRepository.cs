@@ -57,12 +57,12 @@ public class ProductRepository:IProductRepository{
             var min_price = await connection.QueryAsync<int>("select min(Price) from product_table");
             var max_price = await connection.QueryAsync<int>("select max(Price) from product_table");
             if(queryParameters.brands!=null){
-                parameters.Add("@brands",queryParameters.brands);
+                parameters.Add("@brands",queryParameters.brands.Split("|"));
             }else{
                 parameters.Add("@brands",brands.Select(p =>p).ToArray());
             }
             if(queryParameters.categories!=null){
-                parameters.Add("@categories",queryParameters.categories);
+                parameters.Add("@categories",queryParameters.categories.Split("|"));
             }else{
                 parameters.Add("@categories",categories.Select(p =>p).ToArray());
             }
@@ -81,6 +81,8 @@ public class ProductRepository:IProductRepository{
             var products = await connection.QueryAsync<Product>(query, parameters);
             return products.ToList();
         }
+
+    }
 
     }
     
