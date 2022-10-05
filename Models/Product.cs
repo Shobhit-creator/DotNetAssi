@@ -8,7 +8,7 @@ public class Product{
 
     public int price {get; set;}
 
-    public float discountPercentage {get; set;}
+    public float Discount {get; set;}
 
     public float rating {get; set;}
 
