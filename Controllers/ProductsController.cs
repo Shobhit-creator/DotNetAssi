@@ -21,14 +21,6 @@ namespace WebApi.Controllers
             return Ok(products);
         }
 
-        // [HttpGet("/products/search")]
-        // public async Task<IActionResult> GetProductByCategory([FromQuery] string[] categories){
-
-        //     var products = await _productRepo.GetProductByCategory(categories);
-
-        //     return Ok(products);
-
-        // }
 
         [HttpGet("/products/search")]
         public async Task<IActionResult> GetProductByParams([FromQuery] QueryParameters queryParameters){
