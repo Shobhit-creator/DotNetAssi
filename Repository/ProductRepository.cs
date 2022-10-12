@@ -30,25 +30,6 @@ public class ProductRepository:IProductRepository{
         }
     }
 
-    public async Task<IEnumerable<string>> GetAllBrands(){
-            var query = "select distinct(Brand) from product";
-            using(var connection = _context.CreateConnection()){
-                // queryAsync came from Dapper;
-                var products = await connection.QueryAsync<string>(query);
-                return products.ToList();
-           }   
-    }
-
-
-    public async Task<IEnumerable<string>> GetAllCategories(){
-        var query = "select distinct(Category) from product";
-        using(var connection = _context.CreateConnection()){
-                // queryAsync came from Dapper;
-                var products = await connection.QueryAsync<string>(query);
-                return products.ToList();
-        }   
-    }
-
 
     public async Task<IEnumerable<Product>> GetProductByParams(QueryParameters queryParameters){
         var query1 = "select * from product where (category in @categories) and (brand in @brands) and (price>=@min_price) and (price<=@max_price) limit @offset,10";
