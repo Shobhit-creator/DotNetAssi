@@ -28,19 +28,6 @@ namespace WebApi.Controllers
             var products = await _productRepo.GetProductByParams(queryParameters);
             return Ok(products);
         }
-
-        [HttpGet("/products/brands")]
-        public async Task<IActionResult> GetAllBrands(){
-            var products = await _productRepo.GetAllBrands();
-            return Ok(products);
-        }
-
-        [HttpGet("/products/categories")]
-        public async Task<IActionResult> GetAllCategories(){
-            var products = await _productRepo.GetAllCategories();
-            return Ok(products);
-        }
         
-
     }
 }
