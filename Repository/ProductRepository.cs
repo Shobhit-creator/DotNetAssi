@@ -13,21 +13,25 @@ public class ProductRepository:IProductRepository{
 
     public ProductRepository(ProductContext context) => _context = context;
     public async Task<IEnumerable<Product>> GetProducts(DefaultParameters defaultParameters){
-        var query = "select * from product_table, images where product_table.id=images.imageId limit @limit,10";
-        
+        var query1 = "select * from product, images where product.id=images.product_id limit @offset,10";
+        var query2 = "select img.product_id, json_arrayagg(img.image) as images from images img inner join product p on img.product_id=p.id group by  img.product_id limit @offset,10";
         var parameters = new DynamicParameters();
 
-        parameters.Add("@limit",defaultParameters.limit);
+        parameters.Add("@offset",defaultParameters.offset);
 
         using(var connection = _context.CreateConnection()){
             // queryAsync came from Dapper;
-            var products = await connection.QueryAsync<Product>(query, parameters);
+            IEnumerable<Product> products = await connection.QueryAsync<Product>(query1, parameters);
+            IEnumerable<Image> images =  await connection.QueryAsync<Image>(query2,parameters);
+            for(int i=0; i<products.Count(); i++){
+                products.ElementAt(i).images = images.ElementAt(i).images;
+            }
             return products.ToList();
         }
     }
 
     public async Task<IEnumerable<string>> GetAllBrands(){
-            var query = "select distinct(Brand) from product_table";
+            var query = "select distinct(Brand) from product";
             using(var connection = _context.CreateConnection()){
                 // queryAsync came from Dapper;
                 var products = await connection.QueryAsync<string>(query);
@@ -37,7 +41,7 @@ public class ProductRepository:IProductRepository{
 
 
     public async Task<IEnumerable<string>> GetAllCategories(){
-        var query = "select distinct(Category) from product_table";
+        var query = "select distinct(Category) from product";
         using(var connection = _context.CreateConnection()){
                 // queryAsync came from Dapper;
                 var products = await connection.QueryAsync<string>(query);
@@ -47,15 +51,15 @@ public class ProductRepository:IProductRepository{
 
 
     public async Task<IEnumerable<Product>> GetProductByParams(QueryParameters queryParameters){
-        // var query = "select * from products where (category in @categories) and (brand in @brands) and (price>=@min_price) and (price<=@max_price)";
-        var query = "select * from (select * from product_table where Price>=@min_price and Price<=@max_price) as C join images on C.id=images.imageId where Category in @categories  and Brand in @brands limit @limit,10";
+        var query1 = "select * from product where (category in @categories) and (brand in @brands) and (price>=@min_price) and (price<=@max_price) limit @offset,10";
+        var query2 = "select img.product_id, json_arrayagg(img.image) as images from images img inner join product p on img.product_id=p.id  where (category in @categories) and (brand in @brands) and (price>=@min_price) and (price<=@max_price)  group by img.product_id limit @offset,10;";
         var parameters = new DynamicParameters();
         using(var connection = _context.CreateConnection()){
             // queryAsync came from Dapper;
-            var categories =  await connection.QueryAsync<string>("select distinct(Category) from product_table");
-            var brands  = await connection.QueryAsync<string>("select distinct(Brand) from product_table");
-            var min_price = await connection.QueryAsync<int>("select min(Price) from product_table");
-            var max_price = await connection.QueryAsync<int>("select max(Price) from product_table");
+            var categories =  await connection.QueryAsync<string>("select distinct(Category) from product");
+            var brands  = await connection.QueryAsync<string>("select distinct(Brand) from product");
+            var min_price = await connection.QueryAsync<int>("select min(Price) from product");
+            var max_price = await connection.QueryAsync<int>("select max(Price) from product");
             if(queryParameters.brands!=null){
                 parameters.Add("@brands",queryParameters.brands.Split("|"));
             }else{
@@ -77,12 +81,15 @@ public class ProductRepository:IProductRepository{
             }else{
                 parameters.Add("@max_price",max_price.Select(p =>p).ToArray()[0]);
             }
-            parameters.Add("@limit",queryParameters.limit);
-            var products = await connection.QueryAsync<Product>(query, parameters);
+            parameters.Add("@offset",queryParameters.offset);
+            IEnumerable<Product> products = await connection.QueryAsync<Product>(query1, parameters);
+            IEnumerable<Image> images =  await connection.QueryAsync<Image>(query2,parameters);
+            for(int i=0; i<products.Count(); i++){
+                products.ElementAt(i).images = images.ElementAt(i).images;
+
+            }
             return products.ToList();
         }
-
-    }
 
     }
     
