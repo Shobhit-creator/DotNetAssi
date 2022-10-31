@@ -1,0 +1,3 @@
+export const FETCH_CATEGORY = 'FETCH_CATEGORY'
+export const FETCH_BRAND = 'FETCH_BRAND'
+export const FETCH_PRICE = 'FETCH_PRICE'
